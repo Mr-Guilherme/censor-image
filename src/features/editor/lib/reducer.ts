@@ -35,7 +35,6 @@ export type EditorAction =
   | { type: "setStyle"; style: StyleParams }
   | { type: "setSelection"; selectedIds: string[] }
   | { type: "setPendingDraft"; draft: RedactionObject | null }
-  | { type: "confirmPendingDraft" }
   | { type: "setObjectsTransient"; objects: RedactionObject[] }
   | {
       type: "commitObjects";
@@ -163,33 +162,6 @@ export function editorReducer(
       document: {
         ...state.document,
         pendingDraft: action.draft,
-      },
-    };
-  }
-
-  if (action.type === "confirmPendingDraft") {
-    const draft = state.document.pendingDraft;
-
-    if (!draft) {
-      return state;
-    }
-
-    const before = cloneObjects(state.document.objects);
-    const after = [...before, draft];
-
-    const next = withHistoryCommand({
-      state,
-      before,
-      after,
-      command: "add",
-      selectedIds: [],
-    });
-
-    return {
-      ...next,
-      document: {
-        ...next.document,
-        pendingDraft: null,
       },
     };
   }

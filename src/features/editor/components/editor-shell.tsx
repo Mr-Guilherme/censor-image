@@ -7,7 +7,6 @@ import { Separator } from "@/components/ui/separator";
 import { CanvasViewport } from "@/features/editor/components/canvas-viewport";
 import { ImportSurface } from "@/features/editor/components/import-surface";
 import { ObjectsPanel } from "@/features/editor/components/objects-panel";
-import { PendingActionBar } from "@/features/editor/components/pending-action-bar";
 import { SettingsPanel } from "@/features/editor/components/settings-panel";
 import { Toolbar } from "@/features/editor/components/toolbar";
 import { useEditor } from "@/features/editor/hooks/use-editor";
@@ -107,8 +106,6 @@ export function EditorShell(): React.JSX.Element {
     URL.revokeObjectURL(url);
   };
 
-  const pendingVisible = Boolean(editor.state.document.pendingDraft);
-
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[1500px] flex-col gap-4 px-4 py-4 md:px-6">
       <header className="flex items-center justify-between gap-2 rounded-xl border border-border bg-card p-2">
@@ -164,11 +161,6 @@ export function EditorShell(): React.JSX.Element {
           <ImportSurface onFiles={(files) => void importFromFiles(files)} />
         ) : (
           <section className="relative flex min-h-[640px] flex-col rounded-xl border border-border bg-card p-3">
-            <PendingActionBar
-              visible={pendingVisible}
-              onApply={editor.confirmPending}
-              onCancel={editor.cancelPending}
-            />
             <CanvasViewport
               image={editor.state.document.image}
               objects={editor.state.document.objects}

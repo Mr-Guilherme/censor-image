@@ -83,6 +83,7 @@ export function CanvasViewport(params: {
     transform,
     objects: params.objects,
     selectedIds: params.selectedIds,
+    pendingDraft: params.pendingDraft,
     placingIds: params.placingIds,
     onSelection: params.onSelection,
     onPendingShape: params.onPendingShape,
@@ -97,7 +98,7 @@ export function CanvasViewport(params: {
     }
 
     if (params.tool !== "select") {
-      return "Draw shape, then click Apply Redaction to confirm censorship.";
+      return "Draw shape and release pointer to apply immediately.";
     }
 
     if (params.placingIds.length) {

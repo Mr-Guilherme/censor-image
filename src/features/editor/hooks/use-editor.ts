@@ -117,10 +117,6 @@ export function useEditor() {
     [state.document.pendingDraft, state.style],
   );
 
-  const confirmPending = useCallback(() => {
-    dispatch({ type: "confirmPendingDraft" });
-  }, []);
-
   const cancelPending = useCallback(() => {
     dispatch({ type: "setPendingDraft", draft: null });
   }, []);
@@ -238,7 +234,6 @@ export function useEditor() {
     setImage,
     setSelection,
     setPendingShape,
-    confirmPending,
     cancelPending,
     setObjectsTransient,
     commitObjects,

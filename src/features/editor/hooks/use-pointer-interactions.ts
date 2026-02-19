@@ -25,6 +25,7 @@ interface DrawingSession {
   tool: ToolType;
   start: Point;
   points: Point[];
+  before: RedactionObject[];
 }
 
 interface MovingSession {
@@ -69,6 +70,7 @@ export function usePointerInteractions(params: {
   transform: ViewportTransform | null;
   objects: RedactionObject[];
   selectedIds: string[];
+  pendingDraft: RedactionObject | null;
   placingIds: string[];
   onSelection: (ids: string[]) => void;
   onPendingShape: (shape: RedactionObject["shape"] | null) => void;
@@ -111,6 +113,7 @@ export function usePointerInteractions(params: {
 
     if (params.tool !== "select") {
       event.currentTarget.setPointerCapture(event.pointerId);
+      params.onSelection([]);
 
       if (params.tool === "freehand") {
         interactionRef.current = {
@@ -118,6 +121,7 @@ export function usePointerInteractions(params: {
           tool: "freehand",
           start: point,
           points: [point],
+          before: cloneObjects(params.objects),
         };
         params.onPendingShape(createFreehandShape([point, point]));
         setCursor("crosshair");
@@ -129,6 +133,7 @@ export function usePointerInteractions(params: {
         tool: params.tool,
         start: point,
         points: [],
+        before: cloneObjects(params.objects),
       };
       params.onPendingShape(
         createShapeFromPoints({
@@ -327,6 +332,21 @@ export function usePointerInteractions(params: {
       if (params.placingIds.length) {
         params.onClearPlacing();
       }
+    }
+
+    if (session.kind === "drawing") {
+      if (!params.pendingDraft) {
+        setCursor(params.tool === "select" ? "default" : "crosshair");
+        return;
+      }
+
+      params.onCommit({
+        before: session.before,
+        after: [...session.before, params.pendingDraft],
+        command: "add",
+      });
+      params.onSelection([params.pendingDraft.id]);
+      params.onPendingShape(null);
     }
 
     setCursor(params.tool === "select" ? "default" : "crosshair");
