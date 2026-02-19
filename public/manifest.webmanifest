@@ -1,0 +1,16 @@
+{
+  "name": "Image Censor",
+  "short_name": "ImageCensor",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f1115",
+  "theme_color": "#0f1115",
+  "description": "Client-only image censoring and redaction in browser",
+  "icons": [
+    {
+      "src": "/next.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
