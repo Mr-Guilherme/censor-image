@@ -49,6 +49,19 @@ const EDGE_RECTS = [
   },
 ];
 
+const PIXELATE_CASE = {
+  name: "text-heavy",
+  file: path.join(workspaceRoot, "tests", "fixtures", "text-heavy.png"),
+  width: 1238,
+  height: 432,
+  region: {
+    xMin: 0.05,
+    yMin: 0.2,
+    xMax: 0.95,
+    yMax: 0.92,
+  },
+};
+
 function toScreenPoint(bounds, normalizedPoint) {
   return {
     x: bounds.left + normalizedPoint.x * bounds.width,
@@ -196,6 +209,136 @@ async function sampleExportPixel(page, exportPath, samplePoint) {
   );
 }
 
+function assertPixelateMetrics(params) {
+  if (params.variance <= 80) {
+    throw new Error(
+      `${params.contextLabel} expected non-flat region, variance=${params.variance.toFixed(2)}.`,
+    );
+  }
+
+  if (params.equalRatio <= 0.2) {
+    throw new Error(
+      `${params.contextLabel} expected block repetition, equalRatio=${params.equalRatio.toFixed(2)}.`,
+    );
+  }
+
+  if (params.uniqueColors <= 6) {
+    throw new Error(
+      `${params.contextLabel} expected color diversity, uniqueColors=${params.uniqueColors}.`,
+    );
+  }
+}
+
+async function collectExportGridMetrics(page, exportPath, region) {
+  const raw = await readFile(exportPath);
+  const base64 = raw.toString("base64");
+
+  return page.evaluate(
+    async ({ base64, region }) => {
+      const image = new Image();
+      image.src = `data:image/png;base64,${base64}`;
+      await image.decode();
+
+      const canvas = document.createElement("canvas");
+      canvas.width = image.width;
+      canvas.height = image.height;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+      if (!ctx) {
+        throw new Error("Export metrics context unavailable.");
+      }
+
+      ctx.drawImage(image, 0, 0, image.width, image.height);
+
+      const columns = 24;
+      const rows = 12;
+      const samples = [];
+      const unique = new Set();
+      let sum = 0;
+      let sumSquared = 0;
+
+      for (let row = 0; row < rows; row += 1) {
+        for (let column = 0; column < columns; column += 1) {
+          const nx =
+            region.xMin +
+            ((column + 0.5) / columns) * (region.xMax - region.xMin);
+          const ny =
+            region.yMin + ((row + 0.5) / rows) * (region.yMax - region.yMin);
+          const x = Math.min(
+            canvas.width - 1,
+            Math.max(0, Math.round(nx * (canvas.width - 1))),
+          );
+          const y = Math.min(
+            canvas.height - 1,
+            Math.max(0, Math.round(ny * (canvas.height - 1))),
+          );
+          const pixel = ctx.getImageData(x, y, 1, 1).data;
+          const r = pixel[0];
+          const g = pixel[1];
+          const b = pixel[2];
+          const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+          samples.push([r, g, b]);
+          unique.add(
+            `${Math.round(r / 8)}-${Math.round(g / 8)}-${Math.round(b / 8)}`,
+          );
+          sum += luma;
+          sumSquared += luma * luma;
+        }
+      }
+
+      let equalPairs = 0;
+      let totalPairs = 0;
+      const tolerance = 8;
+
+      for (let row = 0; row < rows; row += 1) {
+        for (let column = 0; column < columns; column += 1) {
+          const current = samples[row * columns + column];
+
+          if (column + 1 < columns) {
+            const right = samples[row * columns + column + 1];
+            const isEqual =
+              Math.abs(current[0] - right[0]) <= tolerance &&
+              Math.abs(current[1] - right[1]) <= tolerance &&
+              Math.abs(current[2] - right[2]) <= tolerance;
+
+            if (isEqual) {
+              equalPairs += 1;
+            }
+
+            totalPairs += 1;
+          }
+
+          if (row + 1 < rows) {
+            const below = samples[(row + 1) * columns + column];
+            const isEqual =
+              Math.abs(current[0] - below[0]) <= tolerance &&
+              Math.abs(current[1] - below[1]) <= tolerance &&
+              Math.abs(current[2] - below[2]) <= tolerance;
+
+            if (isEqual) {
+              equalPairs += 1;
+            }
+
+            totalPairs += 1;
+          }
+        }
+      }
+
+      const count = samples.length;
+      const mean = sum / count;
+      const variance = sumSquared / count - mean * mean;
+
+      return {
+        variance,
+        equalRatio: totalPairs ? equalPairs / totalPairs : 0,
+        uniqueColors: unique.size,
+      };
+    },
+    { base64, region },
+  );
+}
+
 async function runCase(page, testCase, screenshotPath) {
   await page.goto(baseUrl, { waitUntil: "networkidle" });
   await page.getByText("Import an image to start censoring").waitFor();
@@ -259,6 +402,63 @@ async function runCase(page, testCase, screenshotPath) {
   });
 }
 
+async function runPixelateCase(page) {
+  await page.goto(baseUrl, { waitUntil: "networkidle" });
+  await page.getByText("Import an image to start censoring").waitFor();
+
+  await page
+    .getByRole("button", { name: "Import image area" })
+    .locator('input[type="file"]')
+    .setInputFiles(PIXELATE_CASE.file);
+
+  await page.getByText("Redaction Settings").waitFor();
+  await page.getByRole("button", { name: "Pixelate" }).click();
+  await page.getByTestId("blur-intensity-input").fill("72");
+  await page.getByTestId("blur-intensity-input").press("Enter");
+  await page.getByTestId("blur-opacity-input").fill("100");
+  await page.getByTestId("blur-opacity-input").press("Enter");
+
+  await page.getByRole("button", { name: "Rectangle" }).click();
+  const canvasMetrics = await getBaseCanvasMetrics(page);
+  const imageBounds = computeContainBounds({
+    canvasRect: canvasMetrics,
+    imageWidth: PIXELATE_CASE.width,
+    imageHeight: PIXELATE_CASE.height,
+  });
+
+  await drawRectInBounds({
+    page,
+    bounds: imageBounds,
+    start: { x: PIXELATE_CASE.region.xMin, y: PIXELATE_CASE.region.yMin },
+    end: { x: PIXELATE_CASE.region.xMax, y: PIXELATE_CASE.region.yMax },
+  });
+
+  const downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export PNG" }).click();
+  const download = await downloadPromise;
+  const exportPath = path.join(
+    outputDir,
+    `smoke-export-${PIXELATE_CASE.name}.png`,
+  );
+  await download.saveAs(exportPath);
+
+  const metrics = await collectExportGridMetrics(
+    page,
+    exportPath,
+    PIXELATE_CASE.region,
+  );
+
+  assertPixelateMetrics({
+    ...metrics,
+    contextLabel: PIXELATE_CASE.name,
+  });
+
+  await page.screenshot({
+    path: path.join(docsDir, "pixelate-mosaic-occlusion.png"),
+    fullPage: true,
+  });
+}
+
 async function run() {
   await mkdir(outputDir, { recursive: true });
   await mkdir(docsDir, { recursive: true });
@@ -276,6 +476,7 @@ async function run() {
     path.join(docsDir, "preview-export-alignment.png"),
   );
   await runCase(page, CASES[1]);
+  await runPixelateCase(page);
 
   await context.close();
   await browser.close();
