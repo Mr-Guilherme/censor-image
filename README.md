@@ -1,71 +1,105 @@
 # Image Censor
 
-Client-only image redaction app built with Next.js App Router, TypeScript, Tailwind, shadcn/ui, Bun and Biome.
+A fast, client-only image redaction tool that runs entirely in your browser.
 
-## Features
+`Image Censor` lets you import an image, draw redaction shapes, apply pixelate or solid fill effects, and export a flattened PNG. No backend, no uploads, no server storage.
 
-- 100% local processing in browser
-- Image import via file picker, drag and drop, and clipboard paste
+## Preview
+
+![Pixelate occlusion demo](docs/pixelate-mosaic-occlusion.png)
+
+## Highlights
+
+- 100% local processing (privacy-first)
+- Import via file picker, drag-and-drop, and clipboard paste (`Ctrl/Cmd + V`)
 - Redaction tools: rectangle, ellipse, line, freehand
-- Redaction modes: pixelated blur and solid color fill
-- Non-destructive edit model with deterministic re-render
-- Undo/redo, object selection, move/resize, and delete
-- Shape copy/paste and duplicate placement
-- PNG export (flattened output)
-- Dark mode only UI
-- Static export-friendly setup (`next.config.ts` with `output: "export"`)
+- Redaction styles: pixelate (mosaic) and solid fill
+- Deterministic renderer: always re-renders from original image + edit list
+- Undo/redo support (`Ctrl/Cmd + Z`, `Ctrl/Cmd + Y`)
+- Selection, move/resize, delete, copy/paste redaction objects
+- PNG export with preview/export parity (WYSIWYG)
 
-## Stack
+## Tech Stack
 
 - Bun
 - Next.js (App Router)
 - TypeScript
 - Tailwind CSS
 - shadcn/ui
-- Biome
-- Playwright (smoke verification)
+- Biome (lint/format)
+- Playwright (smoke checks)
 - Devbox
 
-## Local setup
+## Requirements
+
+- One of:
+  - Devbox
+  - Bun + Node.js
+
+## Run Locally
+
+### Option 1: Devbox (recommended)
 
 ```bash
-devbox init
-devbox add bun nodejs git
-devbox run -- bun install
+devbox shell
+bun install
+bun dev
 ```
 
-## Run
+App: [http://localhost:3000](http://localhost:3000)
+
+### Option 2: Bun directly
 
 ```bash
-devbox run -- bun dev
+bun install
+bun dev
 ```
 
-## Quality checks
+## Quality Gates
 
 ```bash
-devbox run -- bun lint
-devbox run -- bun run build
+bun run lint
+bun run build
 ```
 
-## Playwright smoke checks
+## Smoke Check (Playwright)
 
-Start the app in another terminal:
+Start the app in one terminal:
 
 ```bash
-devbox run -- bun dev
+bun dev --port 3005
 ```
 
-Run smoke:
+Run smoke in another terminal:
 
 ```bash
-bash src/dev/playwright/run-smoke.sh
+SMOKE_BASE_URL=http://localhost:3005 bash src/dev/playwright/run-smoke.sh
 ```
 
-Artifacts are written to `output/playwright/`.
+Artifacts:
 
-## Project structure
+- Exports/check outputs: `output/playwright/`
+- Visual proof screenshots: `docs/`
 
-- `src/app`: app router entry and global styles
-- `src/features/editor`: editor domain (components, hooks, rendering, state, geometry)
-- `src/components/ui`: shadcn/ui primitives
-- `src/dev/playwright`: smoke script and manual checklist
+## Keyboard Shortcuts
+
+- `Ctrl/Cmd + Z`: Undo
+- `Ctrl/Cmd + Y`: Redo
+- `Delete`: Delete selected redactions
+- `Esc`: Clear selection / cancel placement
+- `Ctrl/Cmd + C`: Copy selected shapes
+- `Ctrl/Cmd + V`: Paste shapes (or image from clipboard)
+
+## Project Structure
+
+- `src/app` → Next.js app entry, layout, global styles
+- `src/features/editor` → redaction domain (state, renderer, geometry, interactions)
+- `src/components/ui` → shadcn/ui components
+- `src/dev/playwright` → smoke automation scripts and checklist
+- `tests/fixtures` → input images used by smoke checks
+
+## Notes
+
+- The UI is dark-mode only by design.
+- Static export-friendly setup is enabled in `next.config.ts`.
+- This project is intended for offline/local usage after initial app load.
