@@ -1,3 +1,4 @@
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -30,7 +31,10 @@ export default function RootLayout({
         className={`${spaceGrotesk.variable} antialiased`}
         suppressHydrationWarning
       >
-        <TooltipProvider>{children}</TooltipProvider>
+        <TooltipProvider>
+          {children}
+          {process.env.NODE_ENV === "production" ? <SpeedInsights /> : null}
+        </TooltipProvider>
       </body>
     </html>
   );
