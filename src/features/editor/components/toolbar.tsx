@@ -11,8 +11,12 @@ import {
   Square,
   Undo2,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/8bit/button";
+import { Separator } from "@/components/ui/8bit/separator";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/ui/8bit/toggle-group";
 import type { ToolType } from "@/features/editor/types/editor.types";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +32,16 @@ const TOOL_OPTIONS: Array<{
   { id: "freehand", label: "Freehand", icon: Hand },
 ];
 
+function isToolType(value: string): value is ToolType {
+  return (
+    value === "select" ||
+    value === "rect" ||
+    value === "ellipse" ||
+    value === "line" ||
+    value === "freehand"
+  );
+}
+
 export function Toolbar(params: {
   tool: ToolType;
   onToolChange: (tool: ToolType) => void;
@@ -38,24 +52,44 @@ export function Toolbar(params: {
   onExport: () => void;
 }): React.JSX.Element {
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-2">
-      {TOOL_OPTIONS.map((tool) => {
-        const Icon = tool.icon;
+    <div className="retro flex flex-wrap items-center gap-2 border-x-6 border-y-6 border-foreground bg-card p-1.5 dark:border-ring">
+      <ToggleGroup
+        type="multiple"
+        value={[params.tool]}
+        variant="outline"
+        className="flex min-w-0 flex-wrap gap-1.5"
+        onValueChange={(values) => {
+          const nextValue =
+            values.find((value) => value !== params.tool) ?? values[0];
 
-        return (
-          <Button
-            key={tool.id}
-            type="button"
-            variant={params.tool === tool.id ? "default" : "secondary"}
-            size="sm"
-            className={cn("gap-2", params.tool === tool.id ? "" : "opacity-80")}
-            onClick={() => params.onToolChange(tool.id)}
-          >
-            <Icon className="size-4" />
-            {tool.label}
-          </Button>
-        );
-      })}
+          if (!nextValue || !isToolType(nextValue)) {
+            return;
+          }
+
+          params.onToolChange(nextValue);
+        }}
+      >
+        {TOOL_OPTIONS.map((tool) => {
+          const Icon = tool.icon;
+
+          return (
+            <ToggleGroupItem
+              key={tool.id}
+              type="button"
+              aria-label={tool.label}
+              value={tool.id}
+              variant="outline"
+              className={cn(
+                "h-8 gap-1 px-2 text-[10px]",
+                "data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
+              )}
+            >
+              <Icon className="size-3.5" />
+              {tool.label}
+            </ToggleGroupItem>
+          );
+        })}
+      </ToggleGroup>
 
       <Separator orientation="vertical" className="mx-1 h-7" />
 
@@ -63,19 +97,21 @@ export function Toolbar(params: {
         type="button"
         variant="ghost"
         size="icon"
+        className="h-7 w-7 p-0"
         disabled={!params.canUndo}
         onClick={params.onUndo}
       >
-        <Undo2 className="size-4" />
+        <Undo2 className="size-3.5" />
       </Button>
       <Button
         type="button"
         variant="ghost"
         size="icon"
+        className="h-7 w-7 p-0"
         disabled={!params.canRedo}
         onClick={params.onRedo}
       >
-        <Redo2 className="size-4" />
+        <Redo2 className="size-3.5" />
       </Button>
 
       <Separator orientation="vertical" className="mx-1 h-7" />
@@ -83,16 +119,20 @@ export function Toolbar(params: {
       <Button
         type="button"
         variant="outline"
-        className="gap-2"
+        size="sm"
+        className="gap-1 px-2.5 text-[10px]"
         onClick={params.onExport}
       >
-        <Download className="size-4" />
+        <Download className="size-3.5" />
         Export PNG
       </Button>
 
-      <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
+      <div
+        className="ml-auto flex max-w-[180px] flex-wrap items-center justify-end gap-1 text-right text-[9px] leading-tight text-muted-foreground md:max-w-none"
+        title="Ctrl/Cmd+Z, Y, C, V"
+      >
         <Move className="size-3" />
-        Ctrl/Cmd+Z, Y, C, V
+        <span>Ctrl/Cmd+Z, Y, C, V</span>
       </div>
     </div>
   );

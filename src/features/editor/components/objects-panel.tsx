@@ -1,9 +1,14 @@
 "use client";
 
 import { ArrowDownToLine, ArrowUpToLine, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/8bit/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/8bit/card";
+import { ScrollArea } from "@/components/ui/8bit/scroll-area";
 import type { RedactionObject } from "@/features/editor/types/editor.types";
 import { cn } from "@/lib/utils";
 
@@ -47,43 +52,46 @@ export function ObjectsPanel(params: {
   const hasSelection = params.selectedIds.length > 0;
 
   return (
-    <Card className="h-full">
+    <Card className="h-full min-w-0">
       <CardHeader className="flex-row items-center justify-between space-y-0">
-        <CardTitle className="text-sm">Objects</CardTitle>
+        <CardTitle className="text-[10px] uppercase">Objects</CardTitle>
         <div className="flex items-center gap-1">
           <Button
             type="button"
             variant="ghost"
             size="icon"
+            className="h-7 w-7"
             disabled={!hasSelection}
             onClick={params.onSendToBack}
             title="Send to back"
           >
-            <ArrowDownToLine className="size-4" />
+            <ArrowDownToLine className="size-3.5" />
           </Button>
           <Button
             type="button"
             variant="ghost"
             size="icon"
+            className="h-7 w-7"
             disabled={!hasSelection}
             onClick={params.onBringToFront}
             title="Bring to front"
           >
-            <ArrowUpToLine className="size-4" />
+            <ArrowUpToLine className="size-3.5" />
           </Button>
           <Button
             type="button"
             variant="ghost"
             size="icon"
+            className="h-7 w-7"
             disabled={!hasSelection}
             onClick={params.onDeleteSelected}
           >
-            <Trash2 className="size-4" />
+            <Trash2 className="size-3.5" />
           </Button>
         </div>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[220px] pr-3">
+        <ScrollArea className="h-[210px] pr-2">
           <div className="space-y-2">
             {sorted.map((object) => {
               const selected = params.selectedIds.includes(object.id);
@@ -95,10 +103,10 @@ export function ObjectsPanel(params: {
                   data-testid="object-item"
                   data-selected={selected}
                   className={cn(
-                    "w-full rounded-lg border px-3 py-2 text-left text-sm transition-colors",
+                    "retro w-full border-x-4 border-y-4 px-2.5 py-1.5 text-left text-[10px] transition-colors",
                     selected
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border bg-background hover:bg-muted",
+                      ? "border-primary bg-primary text-primary-foreground dark:border-primary"
+                      : "border-foreground bg-background hover:bg-muted dark:border-ring",
                   )}
                   onClick={(event) => {
                     if (event.shiftKey) {

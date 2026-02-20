@@ -81,7 +81,7 @@ async function clickModeTab(page, name) {
 }
 
 async function assertModeTabsStable(page, contextLabel) {
-  const labels = ["Pixelate", "Solid Fill", "Mark"];
+  const labels = ["Pixelate", "Solid", "Mark"];
 
   for (const label of labels) {
     const tab = page.getByRole("tab", { name: label });
@@ -458,7 +458,7 @@ async function runCase(page, testCase, screenshotPath) {
     .setInputFiles(testCase.file);
 
   await page.getByText("Redaction Settings").waitFor();
-  await clickModeTab(page, "Solid Fill");
+  await clickModeTab(page, "Solid");
   await page.locator('input[type="color"]').waitFor();
 
   const hexInput = page.locator('input[type="text"]').first();

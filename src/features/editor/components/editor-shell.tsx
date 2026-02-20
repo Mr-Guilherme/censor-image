@@ -2,8 +2,8 @@
 
 import { ImagePlus, Trash2 } from "lucide-react";
 import { useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/8bit/button";
+import { Separator } from "@/components/ui/8bit/separator";
 import { CanvasViewport } from "@/features/editor/components/canvas-viewport";
 import { ImportSurface } from "@/features/editor/components/import-surface";
 import { ObjectsPanel } from "@/features/editor/components/objects-panel";
@@ -107,9 +107,11 @@ export function EditorShell(): React.JSX.Element {
   };
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-[1500px] flex-col gap-4 px-4 py-4 md:px-6">
-      <header className="flex items-center justify-between gap-2 rounded-xl border border-border bg-card p-2">
-        <div className="text-sm font-medium tracking-wide">Image Censor</div>
+    <div className="mx-auto flex min-h-screen w-full max-w-[1500px] flex-col gap-3 px-3 py-3 text-sm md:px-5 md:py-4">
+      <header className="retro flex flex-wrap items-center justify-between gap-2 border-x-6 border-y-6 border-foreground bg-card px-2.5 py-2 dark:border-ring">
+        <div className="text-xs font-medium tracking-wide uppercase">
+          Image Censor
+        </div>
         <div className="flex items-center gap-2">
           <input
             ref={fileInputRef}
@@ -128,10 +130,11 @@ export function EditorShell(): React.JSX.Element {
           <Button
             type="button"
             variant="outline"
-            className="gap-2"
+            size="sm"
+            className="gap-1.5 px-3"
             onClick={() => fileInputRef.current?.click()}
           >
-            <ImagePlus className="size-4" />
+            <ImagePlus className="size-3.5" />
             Import image
           </Button>
           <Button
@@ -156,11 +159,14 @@ export function EditorShell(): React.JSX.Element {
         onExport={onExport}
       />
 
-      <div className="grid flex-1 grid-cols-1 gap-4 xl:grid-cols-[1fr_320px]">
-        {!editor.state.document.image ? (
-          <ImportSurface onFiles={(files) => void importFromFiles(files)} />
-        ) : (
-          <section className="relative flex min-h-[640px] flex-col rounded-xl border border-border bg-card p-3">
+      <div className="grid min-w-0 flex-1 grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(280px,320px)]">
+        <section className="relative flex min-h-[640px] min-w-0 flex-col border-x-6 border-y-6 border-foreground bg-card p-3 dark:border-ring">
+          {!editor.state.document.image ? (
+            <ImportSurface
+              className="h-full min-h-0 flex-1"
+              onFiles={(files) => void importFromFiles(files)}
+            />
+          ) : (
             <CanvasViewport
               image={editor.state.document.image}
               objects={editor.state.document.objects}
@@ -181,10 +187,10 @@ export function EditorShell(): React.JSX.Element {
               onCommit={editor.commitObjects}
               onClearPlacing={editor.clearPlacing}
             />
-          </section>
-        )}
+          )}
+        </section>
 
-        <aside className="grid auto-rows-max gap-4">
+        <aside className="grid min-w-0 auto-rows-max gap-3">
           <SettingsPanel
             style={editor.style}
             hasSelection={editor.state.document.selectedIds.length > 0}
@@ -192,7 +198,7 @@ export function EditorShell(): React.JSX.Element {
             onStyleChange={editor.setStyle}
             onApplySelectionStyle={editor.applyStyleToSelection}
           />
-          <Separator />
+          <Separator className="my-1" />
           <ObjectsPanel
             objects={editor.state.document.objects}
             selectedIds={editor.state.document.selectedIds}

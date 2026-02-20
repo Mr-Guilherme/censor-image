@@ -2,12 +2,17 @@
 
 import { PaintBucket, Puzzle } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/8bit/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/8bit/card";
+import { Input } from "@/components/ui/8bit/input";
+import { Slider } from "@/components/ui/8bit/slider";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/8bit/tabs";
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   blockSizeToIntensity,
   intensityToBlockSize,
@@ -113,15 +118,15 @@ function PrecisionControl(params: PrecisionControlProps): React.JSX.Element {
   );
 
   return (
-    <div className="space-y-3 py-1">
+    <div className="space-y-2 py-1">
       <div className="flex items-center justify-between">
         <Label
           htmlFor={params.inputId}
-          className="text-xs font-medium text-muted-foreground"
+          className="text-[10px] font-medium uppercase text-muted-foreground"
         >
           {params.label}
         </Label>
-        <span className="rounded-md border border-border px-2 py-1 text-xs font-medium">
+        <span className="retro border-x-3 border-y-3 border-foreground px-1.5 py-0.5 text-[9px] font-medium dark:border-ring">
           {draftValue}
           {params.suffix}
         </span>
@@ -132,7 +137,7 @@ function PrecisionControl(params: PrecisionControlProps): React.JSX.Element {
         max={params.max}
         step={params.step}
         value={[draftValue]}
-        className="px-1"
+        className="px-0.5 py-0.5"
         onPointerDownCapture={() => {
           isDraggingRef.current = true;
         }}
@@ -164,12 +169,12 @@ function PrecisionControl(params: PrecisionControlProps): React.JSX.Element {
         }}
       />
 
-      <div className="grid grid-cols-[repeat(4,40px)_1fr] items-center gap-2">
+      <div className="grid grid-cols-[repeat(4,36px)_1fr] items-center gap-1.5">
         <Button
           type="button"
-          size="icon"
+          size="sm"
           variant="outline"
-          className="h-10 w-10"
+          className="h-9 w-9 px-0 text-[9px]"
           onClick={() => {
             commitValue(draftValue - params.coarseStep);
           }}
@@ -178,9 +183,9 @@ function PrecisionControl(params: PrecisionControlProps): React.JSX.Element {
         </Button>
         <Button
           type="button"
-          size="icon"
+          size="sm"
           variant="outline"
-          className="h-10 w-10"
+          className="h-9 w-9 px-0 text-[9px]"
           onClick={() => {
             commitValue(draftValue - params.step);
           }}
@@ -189,9 +194,9 @@ function PrecisionControl(params: PrecisionControlProps): React.JSX.Element {
         </Button>
         <Button
           type="button"
-          size="icon"
+          size="sm"
           variant="outline"
-          className="h-10 w-10"
+          className="h-9 w-9 px-0 text-[9px]"
           onClick={() => {
             commitValue(draftValue + params.step);
           }}
@@ -200,9 +205,9 @@ function PrecisionControl(params: PrecisionControlProps): React.JSX.Element {
         </Button>
         <Button
           type="button"
-          size="icon"
+          size="sm"
           variant="outline"
-          className="h-10 w-10"
+          className="h-9 w-9 px-0 text-[9px]"
           onClick={() => {
             commitValue(draftValue + params.coarseStep);
           }}
@@ -217,7 +222,7 @@ function PrecisionControl(params: PrecisionControlProps): React.JSX.Element {
           max={params.max}
           step={params.step}
           value={draftValue}
-          className="h-10"
+          className="h-9 text-[10px]"
           onChange={(event) => {
             const next = Number(event.target.value);
 
@@ -275,14 +280,14 @@ function ColorControl(params: {
 
   return (
     <div className="space-y-2">
-      <Label className="text-xs font-medium text-muted-foreground">
+      <Label className="text-[10px] font-medium uppercase text-muted-foreground">
         {params.label}
       </Label>
       <div className="flex items-center gap-2">
         <Input
           type="color"
           value={draftValue}
-          className="h-11 w-20 cursor-pointer"
+          className="h-10 w-[4.5rem] cursor-pointer"
           onInput={(event) => {
             previewValue(event.currentTarget.value);
           }}
@@ -293,7 +298,7 @@ function ColorControl(params: {
         <Input
           type="text"
           value={draftValue}
-          className="h-11 font-mono"
+          className="h-10 min-w-0 font-mono text-[10px]"
           onChange={(event) => {
             previewValue(event.target.value);
           }}
@@ -395,12 +400,15 @@ export function SettingsPanel(params: {
   const blurIntensity = blockSizeToIntensity(draftStyle.pixelate.blockSize);
 
   return (
-    <Card className="h-full">
-      <CardHeader>
-        <CardTitle className="text-sm">Redaction Settings</CardTitle>
+    <Card className="h-full min-w-0">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-[10px] uppercase">
+          Redaction Settings
+        </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-5">
+      <CardContent className="space-y-4">
         <Tabs
+          className="w-full"
           value={modeTab}
           onValueChange={(value) => {
             if (!isModeTab(value)) {
@@ -413,22 +421,22 @@ export function SettingsPanel(params: {
             }));
           }}
         >
-          <TabsList className="grid h-auto w-full grid-cols-3 rounded-lg border border-border bg-muted/20 p-1">
+          <TabsList className="grid w-full grid-cols-3 [&>*+*]:border-l-2 [&>*+*]:border-foreground">
             <TabsTrigger
               value="pixelate"
-              className="h-10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:hover:bg-primary/90"
+              className="h-7 w-full whitespace-nowrap px-1.5 text-center text-[10px] leading-none data-[state=active]:bg-foreground data-[state=active]:text-background dark:data-[state=active]:bg-foreground dark:data-[state=active]:text-background"
             >
               Pixelate
             </TabsTrigger>
             <TabsTrigger
               value="solid"
-              className="h-10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:hover:bg-primary/90"
+              className="h-7 w-full whitespace-nowrap px-1.5 text-center text-[10px] leading-none data-[state=active]:bg-foreground data-[state=active]:text-background dark:data-[state=active]:bg-foreground dark:data-[state=active]:text-background"
             >
-              Solid Fill
+              Solid
             </TabsTrigger>
             <TabsTrigger
               value="mark"
-              className="h-10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:hover:bg-primary/90"
+              className="h-7 w-full whitespace-nowrap px-1.5 text-center text-[10px] leading-none data-[state=active]:bg-foreground data-[state=active]:text-background dark:data-[state=active]:bg-foreground dark:data-[state=active]:text-background"
             >
               Mark
             </TabsTrigger>
@@ -465,7 +473,7 @@ export function SettingsPanel(params: {
                 }));
               }}
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[10px] text-muted-foreground">
               Block size: {draftStyle.pixelate.blockSize}px
             </p>
             <PrecisionControl
@@ -602,15 +610,16 @@ export function SettingsPanel(params: {
 
         <Button
           type="button"
-          className="h-11 w-full gap-2"
-          variant="secondary"
+          size="sm"
+          className="h-10 w-full gap-1.5 text-[10px]"
+          variant="outline"
           onClick={params.onApplySelectionStyle}
           disabled={!params.hasSelection}
         >
-          <PaintBucket className="size-4" />
+          <PaintBucket className="size-3.5" />
           Update Selected Objects
         </Button>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex items-start gap-1.5 mt-4 text-[9px] text-muted-foreground">
           <Puzzle className="size-3" />
           Shortcut: Ctrl/Cmd+Enter applies current settings to selected objects
         </div>

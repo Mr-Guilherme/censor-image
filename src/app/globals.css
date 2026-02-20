@@ -1,6 +1,8 @@
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "../components/ui/8bit/styles/retro.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -31,25 +33,25 @@
 }
 
 :root {
-  --radius: 0.8rem;
-  --background: oklch(0.145 0.008 250);
-  --foreground: oklch(0.982 0 0);
-  --card: oklch(0.19 0.01 248);
+  --radius: 0rem;
+  --background: oklch(0.13 0.01 250);
+  --foreground: oklch(0.96 0.01 110);
+  --card: oklch(0.18 0.01 250);
   --card-foreground: oklch(0.982 0 0);
-  --popover: oklch(0.19 0.01 248);
+  --popover: oklch(0.18 0.01 250);
   --popover-foreground: oklch(0.982 0 0);
-  --primary: oklch(0.79 0.13 207);
-  --primary-foreground: oklch(0.16 0.01 247);
-  --secondary: oklch(0.26 0.01 248);
-  --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.25 0.01 248);
-  --muted-foreground: oklch(0.72 0 0);
-  --accent: oklch(0.31 0.01 248);
-  --accent-foreground: oklch(0.98 0 0);
+  --primary: oklch(0.8 0.16 146);
+  --primary-foreground: oklch(0.13 0.01 250);
+  --secondary: oklch(0.27 0.01 252);
+  --secondary-foreground: oklch(0.96 0.01 110);
+  --muted: oklch(0.24 0.01 252);
+  --muted-foreground: oklch(0.82 0.01 110);
+  --accent: oklch(0.36 0.04 134);
+  --accent-foreground: oklch(0.97 0.01 110);
   --destructive: oklch(0.63 0.2 24);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 16%);
-  --ring: oklch(0.72 0.11 204);
+  --border: oklch(0.88 0.01 110);
+  --input: oklch(0.22 0.01 252);
+  --ring: oklch(0.84 0.04 121);
 }
 
 @layer base {
@@ -60,5 +62,17 @@
   html,
   body {
     @apply min-h-screen bg-background text-foreground;
+    background-image:
+      linear-gradient(
+        to right,
+        color-mix(in oklch, var(--ring) 8%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in oklch, var(--ring) 8%, transparent) 1px,
+        transparent 1px
+      );
+    background-size: 24px 24px;
   }
 }
