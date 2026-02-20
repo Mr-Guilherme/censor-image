@@ -3,7 +3,11 @@ import {
   getShapeBounds,
   shapeToPath,
 } from "@/features/editor/lib/geometry";
-import { pixelateImageData } from "@/features/editor/lib/pixelate";
+import {
+  clampPixelateBlockSize,
+  computePixelateGrid,
+  quantizeImageData,
+} from "@/features/editor/lib/pixelate";
 import type {
   ImageModel,
   RedactionObject,
@@ -32,11 +36,15 @@ interface ImageRenderTransform {
 
 interface ScratchCanvases {
   compositionCanvas: HTMLCanvasElement;
+  sourceCanvas: HTMLCanvasElement;
+  smallCanvas: HTMLCanvasElement;
   patchCanvas: HTMLCanvasElement;
   maskCanvas: HTMLCanvasElement;
 }
 
 let compositionCanvas: HTMLCanvasElement | null = null;
+let sourceCanvas: HTMLCanvasElement | null = null;
+let smallCanvas: HTMLCanvasElement | null = null;
 let patchCanvas: HTMLCanvasElement | null = null;
 let maskCanvas: HTMLCanvasElement | null = null;
 
@@ -53,12 +61,22 @@ function getScratchCanvases(): ScratchCanvases | null {
     patchCanvas = document.createElement("canvas");
   }
 
+  if (!sourceCanvas) {
+    sourceCanvas = document.createElement("canvas");
+  }
+
+  if (!smallCanvas) {
+    smallCanvas = document.createElement("canvas");
+  }
+
   if (!maskCanvas) {
     maskCanvas = document.createElement("canvas");
   }
 
   return {
     compositionCanvas,
+    sourceCanvas,
+    smallCanvas,
     patchCanvas,
     maskCanvas,
   };
@@ -255,16 +273,68 @@ function applyPixelate(params: {
     return;
   }
 
-  const source = params.context.getImageData(
+  const sourceData = params.context.getImageData(
     bounds.x,
     bounds.y,
     bounds.width,
     bounds.height,
   );
-  const pixelated = pixelateImageData({
-    source,
-    blockSize: params.object.style.pixelate.blockSize,
+  const blockSize = clampPixelateBlockSize(
+    params.object.style.pixelate.blockSize,
+  );
+  const pixelGrid = computePixelateGrid({
+    boundsWidth: bounds.width,
+    boundsHeight: bounds.height,
+    blockSize,
   });
+
+  scratch.sourceCanvas.width = bounds.width;
+  scratch.sourceCanvas.height = bounds.height;
+  const sourceContext = scratch.sourceCanvas.getContext("2d", {
+    willReadFrequently: true,
+  });
+
+  if (!sourceContext) {
+    return;
+  }
+
+  sourceContext.clearRect(0, 0, bounds.width, bounds.height);
+  sourceContext.putImageData(sourceData, 0, 0);
+
+  scratch.smallCanvas.width = pixelGrid.gridWidth;
+  scratch.smallCanvas.height = pixelGrid.gridHeight;
+  const smallContext = scratch.smallCanvas.getContext("2d", {
+    willReadFrequently: true,
+  });
+
+  if (!smallContext) {
+    return;
+  }
+
+  smallContext.clearRect(0, 0, pixelGrid.gridWidth, pixelGrid.gridHeight);
+  smallContext.imageSmoothingEnabled = false;
+  smallContext.drawImage(
+    scratch.sourceCanvas,
+    0,
+    0,
+    bounds.width,
+    bounds.height,
+    0,
+    0,
+    pixelGrid.gridWidth,
+    pixelGrid.gridHeight,
+  );
+  const smallImageData = smallContext.getImageData(
+    0,
+    0,
+    pixelGrid.gridWidth,
+    pixelGrid.gridHeight,
+  );
+  quantizeImageData({
+    imageData: smallImageData,
+    blockSize,
+  });
+  smallContext.putImageData(smallImageData, 0, 0);
 
   scratch.patchCanvas.width = bounds.width;
   scratch.patchCanvas.height = bounds.height;
@@ -277,7 +347,18 @@ function applyPixelate(params: {
   }
 
   patchContext.clearRect(0, 0, bounds.width, bounds.height);
-  patchContext.putImageData(pixelated, 0, 0);
+  patchContext.imageSmoothingEnabled = false;
+  patchContext.drawImage(
+    scratch.smallCanvas,
+    0,
+    0,
+    pixelGrid.gridWidth,
+    pixelGrid.gridHeight,
+    0,
+    0,
+    bounds.width,
+    bounds.height,
+  );
 
   scratch.maskCanvas.width = bounds.width;
   scratch.maskCanvas.height = bounds.height;
@@ -296,11 +377,13 @@ function applyPixelate(params: {
   });
 
   patchContext.globalCompositeOperation = "destination-in";
+  patchContext.imageSmoothingEnabled = false;
   patchContext.drawImage(scratch.maskCanvas, 0, 0);
   patchContext.globalCompositeOperation = "source-over";
 
   params.context.save();
   params.context.globalAlpha = params.object.style.pixelate.alpha;
+  params.context.imageSmoothingEnabled = false;
   params.context.drawImage(scratch.patchCanvas, bounds.x, bounds.y);
   params.context.restore();
 }
