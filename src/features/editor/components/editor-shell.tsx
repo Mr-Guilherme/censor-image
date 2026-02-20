@@ -110,7 +110,7 @@ export function EditorShell(): React.JSX.Element {
     <div className="mx-auto flex min-h-screen w-full max-w-[1500px] flex-col gap-3 px-3 py-3 text-sm md:px-5 md:py-4">
       <header className="retro flex flex-wrap items-center justify-between gap-2 border-x-6 border-y-6 border-foreground bg-card px-2.5 py-2 dark:border-ring">
         <div className="text-xs font-medium tracking-wide uppercase">
-          Image Censor
+          Pixelate
         </div>
         <div className="flex items-center gap-2">
           <input

@@ -11,7 +11,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Image Censor",
+  title: "Pixelate",
   description: "Fast local browser image redaction",
   manifest: "/manifest.webmanifest",
   icons: {

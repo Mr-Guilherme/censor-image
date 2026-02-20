@@ -1,12 +1,12 @@
-# Image Censor
+# Pixelate
 
 A fast, client-only image redaction tool that runs entirely in your browser.
 
-`Image Censor` lets you import an image, draw redaction shapes, apply pixelate or solid fill effects, and export a flattened PNG. No backend, no uploads, no server storage.
+`Pixelate` lets you import an image, draw redaction shapes, apply pixelate or solid fill effects, and export a flattened PNG. No backend, no uploads, no server storage.
 
 ## Preview
 
-![Pixelate occlusion demo](docs/pixelate-mosaic-occlusion.png)
+![Pixelate app screenshot](docs/pixelate.png)
 
 ## Highlights
 

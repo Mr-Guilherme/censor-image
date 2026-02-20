@@ -1,11 +1,11 @@
 {
-  "name": "Image Censor",
-  "short_name": "ImageCensor",
+  "name": "Pixelate",
+  "short_name": "Pixelate",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f1115",
   "theme_color": "#0f1115",
-  "description": "Client-only image censoring and redaction in browser",
+  "description": "Client-only image redaction and pixelation in browser",
   "icons": [
     {
       "src": "/next.svg",

@@ -1,4 +1,4 @@
-const CACHE_NAME = "image-censor-v2";
+const CACHE_NAME = "pixelate-v2";
 const STATIC_ASSETS = ["/", "/manifest.webmanifest"];
 
 function shouldCache(request, response) {
